@@ -60,3 +60,45 @@ It bundles environment detection, DOM helpers, timing utilities, media tools, a 
 
 ```bash
 npm install glitchjs
+```
+Or via CDN:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/glitchjs"></script>
+```
+### Usage:
+
+## ESM
+
+```js
+import GlitchJS from "glitchjs";
+
+const hash = await GlitchJS.cipher("hello world", "1,2,3");
+console.log(hash);
+```
+## Browser
+```html
+<script src="https://cdn.jsdelivr.net/npm/glitchjs"></script>
+<script>
+  GlitchJS.wait(500).then(() => console.log("Ready"));
+</script>
+```
+### 🔐 Cipher Example
+```js
+const hash = await GlitchJS.cipher("test message", [1, 2, 3, 4]);
+console.log(hash);
+```
+### 📄 License
+MIT License
+© My‑Radio.io Team
+
+### 🗓 Update Log
+2024‑06‑01 — v1.0.0
+
+Future updates will expand utilities, improve performance, and add more integrations.
+
+### ⚠ Code Usage Agreement
+By using GlitchJS, you agree to the terms of the MIT License.
+This library is provided “as is” without warranty of any kind.
+The authors are not liable for damages arising from its use.
+Please use responsibly, especially when enabling features like K1LLBOT.
