@@ -14,14 +14,12 @@ export default {
       }
 
       const systemPrompt = filterMode === "Aggressive"
-        ? `You are a STRICT moderation engine.
-Return ONLY valid JSON:
+        ? `Return ONLY JSON:
 { "flagged_words": ["word1", "word2"] }
-Flag profanity, hate speech, sexual terms, threats.`
-        : `You are a RELAXED moderation engine.
-Return ONLY valid JSON:
+Do not explain anything.`
+        : `Return ONLY JSON:
 { "flagged_words": ["word1", "word2"] }
-Only flag strong profanity, hate speech, real threats, explicit sexual content.`;
+Do not explain anything. Only flag serious profanity or hate speech.`;
 
       const ai = await env.AI.run('@cf/meta/llama-3-8b-instruct', {
         messages: [
@@ -31,8 +29,20 @@ Only flag strong profanity, hate speech, real threats, explicit sexual content.`
         temperature: 0
       });
 
-      const parsed = JSON.parse(ai.response);
-      const flagged = parsed.flagged_words || [];
+      let raw = ai.response;
+
+      // 🛡 Extract JSON safely
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+
+      let flagged = [];
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[0]);
+          flagged = parsed.flagged_words || [];
+        } catch {
+          flagged = [];
+        }
+      }
 
       let censoredText = text;
 
@@ -45,14 +55,15 @@ Only flag strong profanity, hate speech, real threats, explicit sexual content.`
         JSON.stringify({
           mode: filterMode,
           flagged,
-          result: censoredText
+          result: censoredText,
+          rawAI: raw // optional debug, remove in production
         }),
         { headers: { "Content-Type": "application/json" } }
       );
 
     } catch (err) {
       return new Response(
-        JSON.stringify({ error: "AI or JSON failure", details: err.message }),
+        JSON.stringify({ error: "Worker failure", details: err.message }),
         { status: 500, headers: { "Content-Type": "application/json" } }
       );
     }
