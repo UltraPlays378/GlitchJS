@@ -1,17 +1,9 @@
 {
-  // Worker script name
   "name": "glitchjs-ai-moderation",
-
-  // Entry point file
   "main": "GlitchJS_AI_Mod.js",
-
-  // JavaScript type
   "type": "javascript",
-
-  // Compatibility date
   "compatibility_date": "2026-02-20",
-
-  // Bind Workers AI
   "ai": {
     "binding": "AI"
-  },
+  }
+}
