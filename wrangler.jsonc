@@ -1,6 +1,6 @@
 {
-  "name": "glitchjs-ai-moderation",
-  "main": "GlitchJS_AI_Mod.js",
+  "name": "glitchjs-ai-test",
+  "main": "Worker.js",
   "type": "javascript",
   "compatibility_date": "2026-02-20",
   "ai": {
