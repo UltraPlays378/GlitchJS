@@ -1,19 +1,29 @@
 export default {
   async fetch(request, env) {
-    const data = await request.json();
+    try {
+      const { message } = await request.json();
 
-    // Call the Llama model
-    const llamaResponse = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
-      messages: [
-        { role: "system", content: "You are GlitchAI, a friendly AI assistant." },
-        { role: "user", content: data.message }
-      ]
-    });
+      // Run model
+      const response = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
+        messages: [
+          { role: "system", content: "You are GlitchAI, a friendly assistant." },
+          { role: "user", content: message }
+        ]
+      });
 
-    return new Response(JSON.stringify({
-      reply: llamaResponse.output[0].content
-    }), {
-      headers: { "Content-Type": "application/json" }
-    });
+      return new Response(JSON.stringify({
+        reply: response.output[0].content
+      }), {
+        headers: { "Content-Type": "application/json" }
+      });
+
+    } catch (err) {
+      return new Response(JSON.stringify({
+        error: err.toString()
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
   }
 };
