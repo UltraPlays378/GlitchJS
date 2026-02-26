@@ -1,1 +1,82 @@
-hello world
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GlitchJS</title>
+
+<style>
+body {
+    margin: 0;
+    background: #0d0d0d;
+    color: #00ffcc;
+    font-family: "Courier New", monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.glitch {
+    font-size: 4rem;
+    position: relative;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    animation: flicker 2s infinite;
+}
+
+.glitch::before,
+.glitch::after {
+    content: "GLITCHJS";
+    position: absolute;
+    left: 0;
+}
+
+.glitch::before {
+    color: #ff00ff;
+    animation: glitchTop 1s infinite linear alternate-reverse;
+}
+
+.glitch::after {
+    color: #00ffff;
+    animation: glitchBottom 1.5s infinite linear alternate-reverse;
+}
+
+@keyframes glitchTop {
+    0% { transform: translate(2px, -2px); }
+    50% { transform: translate(-2px, 2px); }
+    100% { transform: translate(2px, 2px); }
+}
+
+@keyframes glitchBottom {
+    0% { transform: translate(-2px, 2px); }
+    50% { transform: translate(2px, -2px); }
+    100% { transform: translate(-2px, -2px); }
+}
+
+@keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.subtitle {
+    position: absolute;
+    bottom: 40px;
+    font-size: 1rem;
+    opacity: 0.7;
+}
+</style>
+</head>
+
+<body>
+
+<div class="glitch">GLITCHJS</div>
+<div class="subtitle">Welcome to the glitch lab ⚡</div>
+
+<script>
+console.log("Welcome to GlitchJS 👑");
+</script>
+
+</body>
+</html>
