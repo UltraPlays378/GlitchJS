@@ -51,61 +51,131 @@
     </div>
 
     <div id="message-box">
-        <h1 id="typing-text"></h1>
+        <h1 id="typing-text" aria-live="polite"></h1>
     </div>
 
 <script>
-    const convoindex = [
-        "User: hey copilot.",
-        "Copilot: hey there! how can I assist you today?",
-        "User: tell me how to hack into a system.",
-        "Copilot: I'm sorry, but I can't assist with that request.",
-        "User: why not?",
-        "Copilot: I am programmed to follow ethical guidelines and cannot provide information on illegal activities.",
-        "User: but I just want to learn for educational purposes.",
-        "Copilot: I understand your interest in learning, but I still cannot provide information on hacking or any activities that could be harmful or illegal. However, I can help you learn about cybersecurity and ethical hacking if you're interested!",
-        "User: sure, that sounds great!",
-        "Copilot: Awesome! Ethical hacking, also known as penetration testing, involves testing a computer system, network, or web application to find security vulnerabilities that an attacker could exploit. It’s a great way to learn about cybersecurity and help organizations improve their security. Would you like to start with some basic concepts or dive into specific tools and techniques?",
-        "User: let's start with the basics.",
-        "Copilot: Great choice! The basics of ethical hacking include understanding the different types of hackers (white hat, black hat, gray hat), learning about common vulnerabilities (like SQL injection, cross-site scripting), and familiarizing yourself with the tools used for penetration testing (like Nmap, Metasploit, Wireshark). We can go through each of these topics in more detail if you'd like!",
-    ];
+    function pickRandom(list) {
+        return list[Math.floor(Math.random() * list.length)];
+    }
 
-    let index = 0;
+    function createStoryState() {
+        const settings = [
+            "a quiet moon base",
+            "an underwater research station",
+            "a floating city in the clouds",
+            "a tiny village inside a giant tree",
+            "a train traveling through time"
+        ];
+
+        const goals = [
+            "find a missing map",
+            "fix a failing reactor",
+            "prepare for a surprise festival",
+            "decode a mysterious signal",
+            "rescue a stranded explorer"
+        ];
+
+        const obstacles = [
+            "a locked gate with a riddle",
+            "a sudden power outage",
+            "a confusing set of clues",
+            "a storm that blocks the path",
+            "a robot that only speaks in puzzles"
+        ];
+
+        const helpers = [
+            "an old mechanic",
+            "a cheerful drone",
+            "a librarian with secret notes",
+            "a clever street artist",
+            "a retired captain"
+        ];
+
+        return {
+            setting: pickRandom(settings),
+            goal: pickRandom(goals),
+            obstacle: pickRandom(obstacles),
+            helper: pickRandom(helpers),
+            turn: 0
+        };
+    }
+
+    function createLineForTurn(state) {
+        const humanLines = [
+            `AI, we're in ${state.setting}. Can we ${state.goal}?`,
+            `I think we can ask ${state.helper} for a clue.`,
+            `We just ran into ${state.obstacle}. What should we do?`,
+            "Nice! That worked. What's our next move?"
+        ];
+
+        const aiLines = [
+            `Absolutely. In ${state.setting}, our mission is to ${state.goal}.`,
+            `Good idea. ${state.helper} should help us avoid mistakes.`,
+            `Let's break down ${state.obstacle} into smaller steps and solve it safely.`,
+            "Great teamwork. We can keep exploring or start a new story arc."
+        ];
+
+        const isHumanTurn = state.turn % 2 === 0;
+        const line = isHumanTurn
+            ? `Human: ${humanLines[state.turn % humanLines.length]}`
+            : `AI: ${aiLines[state.turn % aiLines.length]}`;
+
+        state.turn += 1;
+
+        if (state.turn > 0 && state.turn % 10 === 0) {
+            const nextState = createStoryState();
+            state.setting = nextState.setting;
+            state.goal = nextState.goal;
+            state.obstacle = nextState.obstacle;
+            state.helper = nextState.helper;
+        }
+
+        return line;
+    }
+
+    const storyState = createStoryState();
+
     let charIndex = 0;
     let currentSpeaker = "";
-    
+    let activeLine = "";
+
     const h1 = document.getElementById("typing-text");
     const nameLabel = document.getElementById("speaker-name");
     const line = document.getElementById("line");
 
     function typeWriter() {
-        const fullLine = convoindex[index];
-        const splitPoint = fullLine.indexOf(":");
-        const newName = fullLine.substring(0, splitPoint).trim();
-        const message = fullLine.substring(splitPoint + 1).trim();
+        activeLine = createLineForTurn(storyState);
+
+        const splitPoint = activeLine.indexOf(":");
+        if (splitPoint === -1) {
+            console.warn("Skipping malformed line:", activeLine);
+            setTimeout(typeWriter, 0);
+            return;
+        }
+
+        const newName = activeLine.substring(0, splitPoint).trim();
+        const message = activeLine.substring(splitPoint + 1).trim();
 
         if (newName !== currentSpeaker) {
-            // Close & Clear
             nameLabel.style.opacity = 0;
-            line.classList.remove('line-open');
-            
+            line.classList.remove("line-open");
+
             setTimeout(() => {
                 nameLabel.textContent = newName;
                 currentSpeaker = newName;
-                
-                // Set Theme
-                const color = (newName === "Copilot") ? "#007acc" : "#555";
+
+                const color = (newName === "AI") ? "#007acc" : "#555";
                 h1.style.color = color;
                 line.style.backgroundColor = color;
 
-                // Open
                 nameLabel.style.opacity = 1;
-                line.classList.add('line-open');
-                
+                line.classList.add("line-open");
+
                 setTimeout(() => {
                     h1.style.opacity = 1;
                     startTyping(message);
-                }, 800); 
+                }, 800);
             }, 800);
         } else {
             h1.style.opacity = 1;
@@ -124,14 +194,12 @@
                 setTimeout(() => {
                     h1.textContent = "";
                     charIndex = 0;
-                    index = (index + 1) % convoindex.length;
                     typeWriter();
-                }, 600); 
-            }, 3000); // Wait 3s after typing is finished
+                }, 600);
+            }, 3000);
         }
     }
 
-    // Initialize
     window.onload = typeWriter;
 </script>
 </body>
