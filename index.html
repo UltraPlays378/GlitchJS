@@ -59,7 +59,7 @@
         return list[Math.floor(Math.random() * list.length)];
     }
 
-    function createRandomStoryLines(turnCount = 8) {
+    function createStoryState() {
         const settings = [
             "a quiet moon base",
             "an underwater research station",
@@ -92,64 +92,74 @@
             "a retired captain"
         ];
 
-        const setting = pickRandom(settings);
-        const goal = pickRandom(goals);
-        const obstacle = pickRandom(obstacles);
-        const helper = pickRandom(helpers);
-
-        const aiReplies = [
-            `Great mission. We are in ${setting}, and we need to ${goal}.`,
-            `Step one: gather information before we face ${obstacle}.`,
-            `Let's ask ${helper} for help; they know this area well.`,
-            "Nice progress. I can suggest a safer route if you want.",
-            "We solved it together. Want to generate a new random story?"
-        ];
-
-        const humanPrompts = [
-            `AI, let's start an adventure in ${setting}.`,
-            `Our objective is to ${goal}. What's the first move?`,
-            `Uh oh, we just hit ${obstacle}. Ideas?`,
-            `${helper} is nearby. Should we trust them?`,
-            "That worked! What's our next step?"
-        ];
-
-        const lines = [];
-        for (let i = 0; i < turnCount; i++) {
-            if (i % 2 === 0) {
-                lines.push(`Human: ${humanPrompts[i % humanPrompts.length]}`);
-            } else {
-                lines.push(`AI: ${aiReplies[i % aiReplies.length]}`);
-            }
-        }
-
-        return lines;
+        return {
+            setting: pickRandom(settings),
+            goal: pickRandom(goals),
+            obstacle: pickRandom(obstacles),
+            helper: pickRandom(helpers),
+            turn: 0
+        };
     }
 
-    const conversationLines = createRandomStoryLines();
+    function createLineForTurn(state) {
+        const humanLines = [
+            `AI, we're in ${state.setting}. Can we ${state.goal}?`,
+            `I think we can ask ${state.helper} for a clue.`,
+            `We just ran into ${state.obstacle}. What should we do?`,
+            "Nice! That worked. What's our next move?"
+        ];
 
-    let index = 0;
+        const aiLines = [
+            `Absolutely. In ${state.setting}, our mission is to ${state.goal}.`,
+            `Good idea. ${state.helper} should help us avoid mistakes.`,
+            `Let's break down ${state.obstacle} into smaller steps and solve it safely.`,
+            "Great teamwork. We can keep exploring or start a new story arc."
+        ];
+
+        const isHumanTurn = state.turn % 2 === 0;
+        const line = isHumanTurn
+            ? `Human: ${humanLines[state.turn % humanLines.length]}`
+            : `AI: ${aiLines[state.turn % aiLines.length]}`;
+
+        state.turn += 1;
+
+        if (state.turn > 0 && state.turn % 10 === 0) {
+            const nextState = createStoryState();
+            state.setting = nextState.setting;
+            state.goal = nextState.goal;
+            state.obstacle = nextState.obstacle;
+            state.helper = nextState.helper;
+        }
+
+        return line;
+    }
+
+    const storyState = createStoryState();
+
     let charIndex = 0;
     let currentSpeaker = "";
+    let activeLine = "";
 
     const h1 = document.getElementById("typing-text");
     const nameLabel = document.getElementById("speaker-name");
     const line = document.getElementById("line");
 
     function typeWriter() {
-        const fullLine = conversationLines[index];
-        const splitPoint = fullLine.indexOf(":");
+        activeLine = createLineForTurn(storyState);
+
+        const splitPoint = activeLine.indexOf(":");
         if (splitPoint === -1) {
-            console.warn(`Skipping malformed line at index ${index}:`, fullLine);
-            index = (index + 1) % conversationLines.length;
+            console.warn("Skipping malformed line:", activeLine);
             setTimeout(typeWriter, 0);
             return;
         }
-        const newName = fullLine.substring(0, splitPoint).trim();
-        const message = fullLine.substring(splitPoint + 1).trim();
+
+        const newName = activeLine.substring(0, splitPoint).trim();
+        const message = activeLine.substring(splitPoint + 1).trim();
 
         if (newName !== currentSpeaker) {
             nameLabel.style.opacity = 0;
-            line.classList.remove('line-open');
+            line.classList.remove("line-open");
 
             setTimeout(() => {
                 nameLabel.textContent = newName;
@@ -160,7 +170,7 @@
                 line.style.backgroundColor = color;
 
                 nameLabel.style.opacity = 1;
-                line.classList.add('line-open');
+                line.classList.add("line-open");
 
                 setTimeout(() => {
                     h1.style.opacity = 1;
@@ -184,7 +194,6 @@
                 setTimeout(() => {
                     h1.textContent = "";
                     charIndex = 0;
-                    index = (index + 1) % conversationLines.length;
                     typeWriter();
                 }, 600);
             }, 3000);
